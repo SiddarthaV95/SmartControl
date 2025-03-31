@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Your existing 4 toggle buttons (unchanged) -->
+        <!-- Sustainability Text Banner -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Get smart control, stay sustainable—give your old smartphones a role that's capable!"
+            android:textSize="18sp"
+            android:textColor="#1B5E20"
+            android:textStyle="italic"
+            android:gravity="center"
+            android:paddingTop="48dp"
+        android:paddingBottom="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="#E8F5E9"
+        android:layout_marginBottom="16dp"/>
+        <!-- Add this above your other toggle buttons -->
+        <ToggleButton
+            android:id="@+id/btn_ri"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textOff="RI OFF (Disables Outputs)"
+            android:textOn="RI ON (Required)"
+            android:checked="true"
+            android:enabled="false"
+            android:textColor="@color/btn_ri"
+            android:layout_gravity="center_horizontal"/>
+
+        <ToggleButton
+            android:id="@+id/btn_txd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:checked="false"
+            android:textColor="@color/btn_txd"
+            android:textOff="@string/txd_off"
+            android:textOn="@string/txd_on"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0"/>
+
+        <ToggleButton
+            android:id="@+id/btn_dtr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/btn_dtr"
+            android:textOff="@string/dtr_off"
+            android:textOn="@string/dtr_on"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0"/>
+
+        <ToggleButton
+            android:id="@+id/btn_rts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/btn_rts"
+            android:textOff="@string/rts_off"
+            android:textOn="@string/rts_on"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0"/>
+
+        <ToggleButton
+            android:id="@+id/btn_rxd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/btn_rxd"
+            android:textOff="@string/rxd_off"
+            android:textOn="@string/rxd_on"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0"/>
+
+        <!-- Sensor status cards -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sensor Status"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Sensor 1 (Motion) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/sensor_bg"
+            android:padding="12dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sensor 1: "
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/tv_sensor1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textSize="16sp"
+                android:textColor="#FF0000"/>
+        </LinearLayout>
+
+        <!-- Sensor 2 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/sensor_bg"
+            android:padding="12dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sensor 2: "
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/tv_sensor2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textSize="16sp"
+                android:textColor="#FF0000"/>
+        </LinearLayout>
+
+        <!-- Sensor 3 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/sensor_bg"
+            android:padding="12dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sensor 3: "
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/tv_sensor3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--"
+                android:textSize="16sp"
+                android:textColor="#FF0000"/>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
