@@ -1,0 +1,28 @@
+<animated-selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/gradient1">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="45"
+                android:startColor="#FF512F"
+                android:endColor="#DD2476"
+                android:type="linear" />
+        </shape>
+    </item>
+    <item android:id="@+id/gradient2">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="45"
+                android:startColor="#DD2476"
+                android:endColor="#1A2980"
+                android:type="linear" />
+        </shape>
+    </item>
+    <transition
+        android:fromId="@+id/gradient1"
+        android:toId="@+id/gradient2"
+        android:duration="3000" />
+    <transition
+        android:fromId="@+id/gradient2"
+        android:toId="@+id/gradient1"
+        android:duration="3000" />
+</animated-selector>
