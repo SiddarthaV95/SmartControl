@@ -229,7 +229,7 @@ public class UsbIOService extends Service{
                         //mPins &= ~pin_changed;
                     else
                         mPins.set(mPins.get() | pin_changed);
-                        //mPins |= pin_changed;
+                    //mPins |= pin_changed;
                     _rdvals = rdvals[0];
                 }
 
@@ -261,7 +261,7 @@ public class UsbIOService extends Service{
     //Arduino-like functions
     public static int digitalRead(int pin) {
         int b = mPins.get() & (1 << pin);
-       //Log.d(TAG,"digitalRead: " + b);
+        //Log.d(TAG,"digitalRead: " + b);
         return (b == 0)? 1 : 0;
     }
 

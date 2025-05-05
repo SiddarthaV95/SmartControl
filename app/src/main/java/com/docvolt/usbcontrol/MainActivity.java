@@ -1,4 +1,13 @@
 package com.docvolt.usbcontrol;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import android.os.Handler;
+
+
+import java.io.IOException;
 
 import static com.docvolt.usbcontrol.UsbIOService.*;
 
@@ -28,9 +37,23 @@ import androidx.core.view.WindowInsetsCompat;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, ArduinoListener {
-    private TextView tvSensor1, tvSensor2, tvSensor3;
+    private TextView tvSensor1, tvSensor2;
     private final String TAG = "MainActivity";
     UsbIOService mUsbIOService = new UsbIOService();
+
+    private final Handler blynkSyncHandler = new Handler();
+    private final Runnable blynkSyncRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // Poll Blynk virtual pins
+            readBlynkVirtualPin("V0", (ToggleButton) findViewById(R.id.btn_txd));
+            readBlynkVirtualPin("V1", (ToggleButton) findViewById(R.id.btn_rxd));
+
+            // Re-run every 10 seconds
+            blynkSyncHandler.postDelayed(this, 4000);
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Initialize TextViews
         tvSensor1 = findViewById(R.id.tv_sensor1);
         tvSensor2 = findViewById(R.id.tv_sensor2);
-        tvSensor3 = findViewById(R.id.tv_sensor3);
+
 
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
@@ -52,8 +75,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // });
 
         findViewById(R.id.btn_txd).setOnClickListener(this);
-        findViewById(R.id.btn_dtr).setOnClickListener(this);
-        findViewById(R.id.btn_rts).setOnClickListener(this);
         findViewById(R.id.btn_rxd).setOnClickListener(this);
 
         bindService(new Intent(this, UsbIOService.class), connection, Context.BIND_AUTO_CREATE);
@@ -74,10 +95,71 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this, "RI must stay ON for outputs to work", Toast.LENGTH_SHORT).show();
             }
         });
+        // Start periodic Blynk polling
+        blynkSyncHandler.post(blynkSyncRunnable);
+
 
 
         //digitalWrite(PIN_RI, 1); // Force RI high permanently
     }
+    private void updateBlynkVirtualPin(String pin, int value) {
+        OkHttpClient client = new OkHttpClient();
+        String token = "5KR8iZa0Q5i-lFnmh40qFWd5Q-dRG_TR";  // Your actual Blynk token
+        String url = "https://blynk.cloud/external/api/update?token=" + token + "&" + pin + "=" + value;
+
+        Request request = new Request.Builder().url(url).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("BLYNK", "Failed to update: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    Log.e("BLYNK", "Update failed: " + response.code());
+                } else {
+                    Log.d("BLYNK", "Blynk pin " + pin + " updated to " + value);
+                }
+            }
+        });
+    }
+
+    private void readBlynkVirtualPin(String pin, ToggleButton toggleButton) {
+        OkHttpClient client = new OkHttpClient();
+        String token = "5KR8iZa0Q5i-lFnmh40qFWd5Q-dRG_TR";  // Your actual Blynk token
+        String url = "https://blynk.cloud/external/api/get?token=" + token + "&" + pin;
+
+        Request request = new Request.Builder().url(url).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("BLYNK", "Failed to fetch: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String value = response.body().string().trim();
+                    boolean isOn = value.equals("1");
+
+                    runOnUiThread(() -> {
+                        toggleButton.setChecked(isOn);
+
+                        // Optional: also update relay if needed on load
+                        if (toggleButton.getId() == R.id.btn_txd)
+                            digitalWrite(PIN_TXD, isOn ? 1 : 0);
+                        else if (toggleButton.getId() == R.id.btn_rxd)
+                            digitalWrite(PIN_RXD, isOn ? 1 : 0);
+                    });
+                } else {
+                    Log.e("BLYNK", "Error reading " + pin + ": " + response.code());
+                }
+            }
+        });
+    }
+
+
 
     private void checkSensors() {
         runOnUiThread(() -> {
@@ -91,18 +173,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             tvSensor2.setText(sensor2 == 1 ? "HIGH" : "LOW");
             tvSensor2.setTextColor(sensor2 == 1 ? Color.GREEN : Color.RED);
 
-            // Sensor 3 (CTS pin)
-            int sensor3 = digitalRead(PIN_CTS);
-            tvSensor3.setText(sensor3 == 1 ? "HIGH" : "LOW");
-            tvSensor3.setTextColor(sensor3 == 1 ? Color.GREEN : Color.RED);
         });
     }
 
     @Override
     public void onPinChange() {
         ((ToggleButton) findViewById(R.id.btn_txd)).setChecked(digitalRead(PIN_TXD) == 1);
-        ((ToggleButton) findViewById(R.id.btn_dtr)).setChecked(digitalRead(PIN_DTR) == 1);
-        ((ToggleButton) findViewById(R.id.btn_rts)).setChecked(digitalRead(PIN_RTS) == 1);
         ((ToggleButton) findViewById(R.id.btn_rxd)).setChecked(digitalRead(PIN_RXD) == 1);
         ((ToggleButton) findViewById(R.id.btn_ri)).setChecked(digitalRead(PIN_RI) == 1);
         checkSensors();
@@ -116,12 +192,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (view.getId() == R.id.btn_txd) {
             digitalWrite(PIN_TXD, isChecked);  // Relay 1
+            updateBlynkVirtualPin("V0", isChecked);
         } else if (view.getId() == R.id.btn_rxd) {
             digitalWrite(PIN_RXD, isChecked); // Relay 2
-        } else if (view.getId() == R.id.btn_rts) {
-            digitalWrite(PIN_RTS, isChecked);  // Relay 3
-        } else if (view.getId() == R.id.btn_dtr) {
-            digitalWrite(PIN_DTR, isChecked);  // Relay 4
+            updateBlynkVirtualPin("V1", isChecked);
         }
     }
 

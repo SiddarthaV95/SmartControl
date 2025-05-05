@@ -24,7 +24,7 @@
             android:gravity="center"
             android:padding="16dp"
             android:background="@drawable/card_background"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="72dp"/>
 
         <!-- RI Status Indicator -->
         <ToggleButton
@@ -58,8 +58,8 @@
             android:layout_height="48dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="8dp"
-            android:textOff="TXD OFF"
-            android:textOn="TXD ON"
+            android:textOff="TXD ON"
+            android:textOn="TXD OFF"
             android:textColor="#FFFFFF"
             android:background="@drawable/relay_button_background"
             android:textSize="14sp"/>
@@ -71,37 +71,12 @@
             android:layout_height="48dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="8dp"
-            android:textOff="RXD OFF"
-            android:textOn="RXD ON"
+            android:textOff="RXD ON"
+            android:textOn="RXD OFF"
             android:textColor="#FFFFFF"
             android:background="@drawable/relay_button_background"
             android:textSize="14sp"/>
 
-        <!-- RTS Button -->
-        <ToggleButton
-            android:id="@+id/btn_rts"
-            android:layout_width="280dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="8dp"
-            android:textOff="RTS OFF"
-            android:textOn="RTS ON"
-            android:textColor="#FFFFFF"
-            android:background="@drawable/relay_button_background"
-            android:textSize="14sp"/>
-
-        <!-- DTR Button -->
-        <ToggleButton
-            android:id="@+id/btn_dtr"
-            android:layout_width="280dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="24dp"
-            android:textOff="DTR OFF"
-            android:textOn="DTR ON"
-            android:textColor="#FFFFFF"
-            android:background="@drawable/relay_button_background"
-            android:textSize="14sp"/>
 
         <!-- Sensor Status Section -->
         <TextView
@@ -169,31 +144,6 @@
                 android:textColor="#FF0000"/>
         </LinearLayout>
 
-        <!-- Sensor 3 -->
-        <LinearLayout
-            android:layout_width="280dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="@drawable/card_background"
-            android:padding="16dp"
-            android:layout_gravity="center_horizontal">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Sensor 3:"
-                android:textSize="14sp"
-                android:textColor="#333333"/>
-
-            <TextView
-                android:id="@+id/tv_sensor3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="--"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#FF0000"/>
-        </LinearLayout>
     </LinearLayout>
 </ScrollView>
