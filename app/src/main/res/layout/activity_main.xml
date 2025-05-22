@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#FAFAFA">
+    android:background="#192734">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,12 +19,12 @@
             android:layout_height="wrap_content"
             android:text="Get smart control, stay sustainable—give your old smartphones a role that's capable!"
             android:textSize="18sp"
-            android:textColor="#1B5E20"
+            android:textColor="#FAFAFA"
             android:textStyle="italic"
             android:gravity="center"
             android:padding="16dp"
             android:background="@drawable/card_background"
-            android:layout_marginBottom="72dp"/>
+            android:layout_marginBottom="64dp"/>
 
         <!-- RI Status Indicator -->
         <ToggleButton
@@ -34,7 +34,7 @@
             android:layout_gravity="center_horizontal"
             android:text="RI: ACTIVE (Required for outputs)"
             android:textSize="14sp"
-            android:textColor="#FFFFFF"
+            android:textColor="#192734"
             android:textStyle="bold"
             android:gravity="center"
             android:padding="12dp"
@@ -54,28 +54,17 @@
         <!-- TXD Button -->
         <ToggleButton
             android:id="@+id/btn_txd"
-            android:layout_width="280dp"
-            android:layout_height="48dp"
+            android:layout_width="160dp"
+            android:layout_height="280dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="8dp"
-            android:textOff="TXD ON"
-            android:textOn="TXD OFF"
+            android:background="@drawable/toggle_switch_selector"
+            android:textOff=""
+            android:textOn=""
             android:textColor="#FFFFFF"
-            android:background="@drawable/relay_button_background"
             android:textSize="14sp"/>
 
-        <!-- RXD Button -->
-        <ToggleButton
-            android:id="@+id/btn_rxd"
-            android:layout_width="280dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="8dp"
-            android:textOff="RXD ON"
-            android:textOn="RXD OFF"
-            android:textColor="#FFFFFF"
-            android:background="@drawable/relay_button_background"
-            android:textSize="14sp"/>
+
 
 
         <!-- Sensor Status Section -->
@@ -104,38 +93,10 @@
                 android:layout_weight="1"
                 android:text="Sensor 1:"
                 android:textSize="14sp"
-                android:textColor="#333333"/>
+                android:textColor="#FAFAFA"/>
 
             <TextView
                 android:id="@+id/tv_sensor1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="--"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#FF0000"/>
-        </LinearLayout>
-
-        <!-- Sensor 2 -->
-        <LinearLayout
-            android:layout_width="280dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="@drawable/card_background"
-            android:padding="16dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Sensor 2:"
-                android:textSize="14sp"
-                android:textColor="#333333"/>
-
-            <TextView
-                android:id="@+id/tv_sensor2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="--"

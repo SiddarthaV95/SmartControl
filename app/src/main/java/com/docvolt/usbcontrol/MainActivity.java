@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void run() {
             // Poll Blynk virtual pins
             readBlynkVirtualPin("V0", (ToggleButton) findViewById(R.id.btn_txd));
-            readBlynkVirtualPin("V1", (ToggleButton) findViewById(R.id.btn_rxd));
 
             // Re-run every 10 seconds
             blynkSyncHandler.postDelayed(this, 4000);
@@ -62,7 +61,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Initialize TextViews
         tvSensor1 = findViewById(R.id.tv_sensor1);
-        tvSensor2 = findViewById(R.id.tv_sensor2);
 
 
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -75,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // });
 
         findViewById(R.id.btn_txd).setOnClickListener(this);
-        findViewById(R.id.btn_rxd).setOnClickListener(this);
 
         bindService(new Intent(this, UsbIOService.class), connection, Context.BIND_AUTO_CREATE);
 
@@ -149,8 +146,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         // Optional: also update relay if needed on load
                         if (toggleButton.getId() == R.id.btn_txd)
                             digitalWrite(PIN_TXD, isOn ? 1 : 0);
-                        else if (toggleButton.getId() == R.id.btn_rxd)
-                            digitalWrite(PIN_RXD, isOn ? 1 : 0);
                     });
                 } else {
                     Log.e("BLYNK", "Error reading " + pin + ": " + response.code());
@@ -168,18 +163,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             tvSensor1.setText(sensor1 == 1 ? "HIGH" : "LOW");
             tvSensor1.setTextColor(sensor1 == 1 ? Color.GREEN : Color.RED);
 
-            // Sensor 2 (DCD pin)
-            int sensor2 = digitalRead(PIN_DCD);
-            tvSensor2.setText(sensor2 == 1 ? "HIGH" : "LOW");
-            tvSensor2.setTextColor(sensor2 == 1 ? Color.GREEN : Color.RED);
-
         });
     }
 
     @Override
     public void onPinChange() {
         ((ToggleButton) findViewById(R.id.btn_txd)).setChecked(digitalRead(PIN_TXD) == 1);
-        ((ToggleButton) findViewById(R.id.btn_rxd)).setChecked(digitalRead(PIN_RXD) == 1);
         ((ToggleButton) findViewById(R.id.btn_ri)).setChecked(digitalRead(PIN_RI) == 1);
         checkSensors();
     }
@@ -193,9 +182,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (view.getId() == R.id.btn_txd) {
             digitalWrite(PIN_TXD, isChecked);  // Relay 1
             updateBlynkVirtualPin("V0", isChecked);
-        } else if (view.getId() == R.id.btn_rxd) {
-            digitalWrite(PIN_RXD, isChecked); // Relay 2
-            updateBlynkVirtualPin("V1", isChecked);
         }
     }
 
