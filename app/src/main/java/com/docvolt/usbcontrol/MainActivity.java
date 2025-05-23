@@ -1,11 +1,11 @@
 package com.docvolt.usbcontrol;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import android.os.Handler;
-
 
 import java.io.IOException;
 
@@ -41,17 +41,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final String TAG = "MainActivity";
     UsbIOService mUsbIOService = new UsbIOService();
 
+    // Track the desired state (what the user wants)
+    private boolean desiredRelayState = false;
+    private boolean lastKnownApplianceState = false;
+    private boolean isControllingRelay = false;
+    private static final long RELAY_DEBOUNCE_TIME = 2000;
+    // Track if we're in inverted mode
+    private boolean invertedMode = false;
+    private boolean applianceState = false;
+    private boolean relayState = false;
+    private boolean isManualOverride = false;
+    private long lastControlTime = 0;
+    private static final long CONTROL_TIMEOUT = 3000; // 3 seconds
+    private boolean isSyncingWithBlynk = false;
+    private long lastBlynkUpdateTime = 0;
+    private static final long BLYNK_UPDATE_COOLDOWN = 2000; // 2 seconds
+    private boolean blynkButtonState = false;
+    private long lastBlynkSyncTime = 0;
+    private static final long BLYNK_SYNC_INTERVAL = 5000; // 5 seconds
+
     private final Handler blynkSyncHandler = new Handler();
     private final Runnable blynkSyncRunnable = new Runnable() {
         @Override
         public void run() {
-            // Poll Blynk virtual pins
-            readBlynkVirtualPin("V0", (ToggleButton) findViewById(R.id.btn_txd));
-
-            // Re-run every 10 seconds
-            blynkSyncHandler.postDelayed(this, 4000);
+            // Only sync if enough time has passed since last sync
+            if (System.currentTimeMillis() - lastBlynkSyncTime >= BLYNK_SYNC_INTERVAL) {
+                syncWithBlynk();
+                lastBlynkSyncTime = System.currentTimeMillis();
+            }
+            blynkSyncHandler.postDelayed(this, BLYNK_SYNC_INTERVAL);
         }
     };
+    private void syncWithBlynk() {
+        // Update Blynk with actual appliance state
+        updateBlynkVirtualPin("V0", applianceState ? 1 : 0);
+
+        // Get latest state from Blynk
+        readBlynkVirtualPin("V0", (ToggleButton) findViewById(R.id.btn_txd));
+    }
 
 
     @Override
@@ -59,18 +86,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize TextViews
         tvSensor1 = findViewById(R.id.tv_sensor1);
-
-
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-        // Remove or replace this line if cb_rsd doesn't exist in your layout
-        // ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.cb_rsd), (v, insets) -> {
-        //    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-        //    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-        //    return insets;
-        // });
 
         findViewById(R.id.btn_txd).setOnClickListener(this);
 
@@ -83,25 +100,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         usbIntentFilter.addAction(UsbIOService.ACTION_USB_NOT_SUPPORTED);
         usbIntentFilter.addAction(UsbIOService.ACTION_USB_PERMISSION_NOT_GRANTED);
         registerReceiver(mUsbReceiver, usbIntentFilter);
+
         ToggleButton btnRi = findViewById(R.id.btn_ri);
-        btnRi.setChecked(true);  // Force RI to be checked
+        btnRi.setChecked(true);
         btnRi.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            // Prevent user from unchecking
             if (!isChecked) {
                 buttonView.setChecked(true);
                 Toast.makeText(this, "RI must stay ON for outputs to work", Toast.LENGTH_SHORT).show();
             }
         });
-        // Start periodic Blynk polling
+
         blynkSyncHandler.post(blynkSyncRunnable);
-
-
-
-        //digitalWrite(PIN_RI, 1); // Force RI high permanently
     }
+
     private void updateBlynkVirtualPin(String pin, int value) {
         OkHttpClient client = new OkHttpClient();
-        String token = "5KR8iZa0Q5i-lFnmh40qFWd5Q-dRG_TR";  // Your actual Blynk token
+        String token = "5KR8iZa0Q5i-lFnmh40qFWd5Q-dRG_TR";
         String url = "https://blynk.cloud/external/api/update?token=" + token + "&" + pin + "=" + value;
 
         Request request = new Request.Builder().url(url).build();
@@ -115,8 +129,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
                     Log.e("BLYNK", "Update failed: " + response.code());
-                } else {
-                    Log.d("BLYNK", "Blynk pin " + pin + " updated to " + value);
                 }
             }
         });
@@ -124,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void readBlynkVirtualPin(String pin, ToggleButton toggleButton) {
         OkHttpClient client = new OkHttpClient();
-        String token = "5KR8iZa0Q5i-lFnmh40qFWd5Q-dRG_TR";  // Your actual Blynk token
+        String token = "5KR8iZa0Q5i-lFnmh40qFWd5Q-dRG_TR";
         String url = "https://blynk.cloud/external/api/get?token=" + token + "&" + pin;
 
         Request request = new Request.Builder().url(url).build();
@@ -138,54 +150,98 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
                     String value = response.body().string().trim();
-                    boolean isOn = value.equals("1");
+                    blynkButtonState = value.equals("1");
 
                     runOnUiThread(() -> {
-                        toggleButton.setChecked(isOn);
-
-                        // Optional: also update relay if needed on load
-                        if (toggleButton.getId() == R.id.btn_txd)
-                            digitalWrite(PIN_TXD, isOn ? 1 : 0);
+                        if (!isManualOverride && blynkButtonState != desiredRelayState) {
+                            desiredRelayState = blynkButtonState;
+                            toggleButton.setChecked(desiredRelayState);
+                            updateRelayState();
+                        }
                     });
-                } else {
-                    Log.e("BLYNK", "Error reading " + pin + ": " + response.code());
                 }
+            }
+        });
+    }
+
+    private void checkSensors() {
+        boolean newApplianceState = (digitalRead(PIN_DSR) == 0);
+        if (newApplianceState != applianceState) {
+            applianceState = newApplianceState;
+            updateUI();
+
+            // Update Blynk only if state changed and not in manual override
+            if (!isManualOverride) {
+                updateBlynkVirtualPin("V0", applianceState ? 1 : 0);
+            }
+        }
+    }
+
+    @Override
+    public void onPinChange() {
+        checkSensors();
+    }
+
+    @Override
+    public void onClick(View view) {
+        digitalWrite(PIN_RI, 1);
+
+        if (view.getId() == R.id.btn_txd) {
+            isManualOverride = true;
+            desiredRelayState = ((CompoundButton) view).isChecked();
+            updateRelayState();
+
+            // Clear manual override after timeout
+            blynkSyncHandler.postDelayed(() -> isManualOverride = false, CONTROL_TIMEOUT);
+        }
+    }
+
+    private void updateRelayState() {
+        // Don't allow rapid successive control attempts
+        if (System.currentTimeMillis() - lastControlTime < 500) {
+            return;
+        }
+        lastControlTime = System.currentTimeMillis();
+
+        // Only act if desired state doesn't match actual state
+        if (desiredRelayState != applianceState) {
+            // Toggle relay state
+            relayState = !relayState;
+            digitalWrite(PIN_TXD, relayState ? 1 : 0);
+
+            // Verify state after delay
+            blynkSyncHandler.postDelayed(this::verifyState, 1000);
+        }
+    }
+    private void verifyState() {
+        boolean newApplianceState = (digitalRead(PIN_DSR) == 0);
+        if (newApplianceState != applianceState) {
+            applianceState = newApplianceState;
+            updateUI();
+
+            // If still not in desired state, try again
+            if (desiredRelayState != applianceState) {
+                updateRelayState();
+            }
+        }
+    }
+    private void updateUI() {
+        runOnUiThread(() -> {
+            // Update sensor display
+            tvSensor1.setText(applianceState ? "ON" : "OFF");
+            tvSensor1.setTextColor(applianceState ? Color.GREEN : Color.RED);
+
+            // Update toggle button to reflect desired state
+            ToggleButton toggle = findViewById(R.id.btn_txd);
+            if (toggle.isChecked() != desiredRelayState) {
+                toggle.setChecked(desiredRelayState);
             }
         });
     }
 
 
 
-    private void checkSensors() {
-        runOnUiThread(() -> {
-            // Sensor 1 (DSR pin)
-            int sensor1 = digitalRead(PIN_DSR);
-            tvSensor1.setText(sensor1 == 1 ? "HIGH" : "LOW");
-            tvSensor1.setTextColor(sensor1 == 1 ? Color.GREEN : Color.RED);
-
-        });
-    }
-
-    @Override
-    public void onPinChange() {
-        ((ToggleButton) findViewById(R.id.btn_txd)).setChecked(digitalRead(PIN_TXD) == 1);
-        ((ToggleButton) findViewById(R.id.btn_ri)).setChecked(digitalRead(PIN_RI) == 1);
-        checkSensors();
-    }
-
-    @Override
-    public void onClick(View view) {
-
-        digitalWrite(PIN_RI, 1);
-        int isChecked = ((CompoundButton) view).isChecked() ? 1 : 0;
-
-        if (view.getId() == R.id.btn_txd) {
-            digitalWrite(PIN_TXD, isChecked);  // Relay 1
-            updateBlynkVirtualPin("V0", isChecked);
-        }
-    }
-
-    /*This handles authentication of USB devices*/
+    /* Rest of the code remains the same */
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         private AlertDialog no_usb_dialog = null;
 
