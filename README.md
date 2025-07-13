@@ -1,47 +1,58 @@
-# IoT-Based Smart Switch System using Blynk
+# 📱 IoT-Based Smart Switch System using Blynk (Smartphone + USB-TTL Based)
 
-This project implements a smart switch system that enables real-time control and monitoring of an electrical appliance through both a physical switch and the Blynk IoT platform (mobile and web dashboard). The system ensures seamless synchronization between the physical switch and the digital interfaces, reflecting accurate appliance status and allowing control from anywhere.
+This project demonstrates a low-cost smart switch system using an **old Android smartphone**, the **Blynk IoT platform**, and a **relay module** controlled via a **USB to TTL converter**. It allows real-time control and monitoring of electrical appliances through both a physical switch and Blynk (web/mobile dashboard), with seamless synchronization.
+
+---
 
 ## 🔧 Features
 
-- Real-time appliance state monitoring on Blynk web and mobile dashboard.
-- Control appliance using:
+- Real-time appliance control and monitoring via:
   - Physical switch
   - Blynk mobile app
   - Blynk web dashboard
-- Sync logic handles both toggled positions of the physical switch.
-- Immediate state update from physical switch to dashboard.
-- Control input from dashboard takes effect with minimal delay (~0.5s).
-- Works without local HTTP server – fully cloud-based via Blynk.
+- Synchronization logic ensures:
+  - Changes from physical switch reflect on Blynk
+  - Remote Blynk commands update the appliance and stay in sync
+- Minimal delay (~0.5s) for cloud-based operations
+- No microcontroller used — replaces ESP32 with an **Android phone + USB-TTL**
+
+---
 
 ## 🛠️ Hardware Used
 
-- ESP32 microcontroller
-- Relay module
-- Physical switch (two-way)
-- AC appliance (demo/tested with a bulb)
-- Internet connection (WiFi)
+- Old Android smartphone (USB OTG supported)
+- **USB to TTL converter** (e.g., CP2102/FTDI)
+- **Relay module** (5V)
+- Two-way physical switch
+- AC appliance (bulb used for demo)
+- Internet connection (via phone’s WiFi or hotspot)
+- USB OTG cable (to connect TTL converter to phone)
+
+---
 
 ## 🌐 Platform
 
-- [Blynk IoT Platform](https://blynk.io)
-  - Blynk Web Dashboard
-  - Blynk Mobile App (iOS/Android)
+- **Blynk IoT Platform**
+- Blynk Web Dashboard
+- Blynk Mobile App (Android/iOS)
+
+---
 
 ## ⚙️ How It Works
 
-1. ESP32 reads the state of the physical switch and controls the relay.
-2. The relay toggles the appliance ON/OFF.
-3. The current appliance state is sent to Blynk dashboard in real time.
-4. User can send control commands from app or web dashboard.
-5. ESP32 updates the relay state and syncs with the switch logic.
+1. The **Android phone runs a Blynk-connected script/app** (e.g., via Termux or a custom Java app).
+2. The phone communicates with the relay module using a **USB to TTL converter** via serial communication.
+3. The **physical switch** changes state and is detected either by GPIO input logic or manual sync.
+4. Any command (from switch or Blynk) updates the relay, toggling the appliance ON/OFF.
+5. The current state is sent to Blynk for remote monitoring.
 
-## 📸 Demo
-
-Images of the working prototype have been included in the `demo/` folder and shown in the project presentation.
+---
 
 ## ✅ Observations
 
-- Appliance state changes via physical switch are instantly reflected on the Blynk dashboard.
-- Control from dashboard incurs a small delay (~0.5 seconds) before execution.
-- The system successfully handles state sync between all control points and accurately reflects the ON/OFF state of the appliance.
+- System works reliably without a microcontroller.
+- Delays are minimal due to direct serial control via the phone.
+- Sync logic prevents desync between physical and digital inputs.
+- Useful for **repurposing old phones into smart IoT controllers**.
+
+---
